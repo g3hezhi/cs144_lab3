@@ -82,15 +82,31 @@ void sr_handlepacket(struct sr_instance* sr,
 
   printf("*** -> Received packet of length %d \n",len);
 
-  /* fill in code here */
+  if (len < sizeof(sr_ethernet_hdr_t)) {
+    fprintf(stderr, "Failed to process ETHERNET header, insufficient length\n");
+    return;
+  }
+    
+  sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
+  print_hdr_eth(packet); 
+    
+  uint16_t ether_type = ntohs(eth_hdr->ether_type);
+  struct sr_if *interface_detail = sr_get_interface(sr, interface);
+    
+  if (ether_type == ethertype_arp) 
+  {
+      sr_handle_arp_packet(sr, packet, len, interface);
+  } else if (ether_type == ethertype_ip) {
+      sr_handle_ip_packet(sr, packet, len, interface_detail);
+  }
 
 }/* end sr_ForwardPacket */
 
 
-void sr_ip_handle(struct sr_instance *sr, 
-                  uint8_t *packet,  
-                  struct sr_if *interface,
-                  unsigned int len){
+void sr_handle_ip_packet(struct sr_instance *sr, 
+                         uint8_t *packet,
+                         unsigned int len,
+                         struct sr_if *interface){
 
   assert(sr);
   assert(packet);
