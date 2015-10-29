@@ -418,10 +418,10 @@ void sr_handle_arp_packet(struct sr_instance *sr,
     if (ntohs(arp_hdr->ar_op) == arp_op_request)           /* Request to me, send a reply*/
       printf("***** -> this is a arp request, preparing a reply L:419\n");
       sr_handle_arp_send_reply_to_requester(sr, packet, receive_interface, sender_interface);
-    else if (ntohs(arp_hdr->ar_op) == arp_op_reply)    /* Reply to me, cache it */
+    else if (ntohs(arp_hdr->ar_op) == arp_op_reply){    /* Reply to me, cache it */
       printf("***** -> This is a REPLY to me, CACHE it L:422 \n");
       sr_handle_arp_cache_reply(sr, packet, receive_interface);
-
+}
 }/* end sr_handle_arp_packet */
 
 
