@@ -94,9 +94,11 @@ void sr_handlepacket(struct sr_instance* sr,
   struct sr_if *interface_detail = sr_get_interface(sr, interface);
     
   if (ether_type == ethertype_arp) 
-  {
+  { 
+      print("this is arp");
       sr_handle_arp_packet(sr, packet, len, interface);
   } else if (ether_type == ethertype_ip) {
+      printf("this is ip");
       sr_handle_ip_packet(sr, packet, len, interface_detail);
   }
 
