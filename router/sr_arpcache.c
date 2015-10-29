@@ -60,7 +60,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
             interface = sr_get_interface_byAddr(sr, eth_hdr->ether_dhost);
           }
 
-          if(interface)
+          if(!interface)
             sr_send_icmp(sr, pckt->buf, pckt->len, 3, 1);
 
           sr_arpreq_destroy(&(sr->cache), request);
