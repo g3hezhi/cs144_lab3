@@ -133,7 +133,7 @@ void sr_handle_ip_packet(struct sr_instance *sr,
   }else{
     if(ihdr->ip_p == ip_protocol_icmp){
       sr_icmp_handler(sr,packet,len);
-    }else{
+    } {
 
       /*
       icmp type  unreachable =   3
