@@ -69,9 +69,9 @@ void sr_init(struct sr_instance* sr)
  *---------------------------------------------------------------------*/
 
 void sr_handlepacket(struct sr_instance* sr,
-        uint8_t * packet/* lent */,
-        unsigned int len,
-        char* interface/* lent */)
+                     uint8_t * packet/* lent */,
+                     unsigned int len,
+                     char* interface/* lent */)
 {
   /* REQUIRES */
   assert(sr);
@@ -86,7 +86,7 @@ void sr_handlepacket(struct sr_instance* sr,
   }
     
   sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
-  print_hdr_eth(eth_hdr); 
+  print_hdr_eth(packet); 
     
   uint16_t ether_type = ntohs(eth_hdr->ether_type);
   struct sr_if *interface_detail = sr_get_interface(sr, interface);
@@ -97,7 +97,7 @@ void sr_handlepacket(struct sr_instance* sr,
       sr_handle_arp_packet(sr, packet, len, interface);
 
   } else if (ether_type == ethertype_ip) {
-    
+
       printf("***** -> Going to sr_handle_IP_packet \n");
       sr_handle_ip_packet(sr, packet, len, interface_detail);
   }
@@ -123,7 +123,8 @@ void sr_handle_ip_packet(struct sr_instance *sr,
   uint16_t sum = ihdr->ip_sum;
   uint16_t ck_sum = cksum(ihdr,ihdr->ip_hl*4);
   
-  print_hdr_ip(ihdr);
+  print_hdr_ip(packet);
+
   if(len < check_len1 || len < check_len2 || sum!=ck_sum){
     printf("*** -> ERROR!!!! -> not enough length or check sum not mach\n");
   }
@@ -405,7 +406,7 @@ void sr_handle_arp_packet(struct sr_instance *sr,
     struct sr_if *receive_interface = sr_get_interface(sr, receiving_interface);
     struct sr_if *sender_interface  = sr_get_interface_byIP(sr, arp_hdr->ar_sip); 
 
-    print_hdr_arp(arp_hdr);
+    print_hdr_arp(packet);
 
     /*Check interface whether in router's IP address*/
     if (!receive_interface)
@@ -415,13 +416,13 @@ void sr_handle_arp_packet(struct sr_instance *sr,
     }
 
     /* Get arp_opcode: request or replay to me*/
-    if (ntohs(arp_hdr->ar_op) == arp_op_request)           /* Request to me, send a reply*/
+    if (ntohs(arp_hdr->ar_op) == arp_op_request){           /* Request to me, send a reply*/
       printf("***** -> this is a arp request, preparing a reply L:419\n");
       sr_handle_arp_send_reply_to_requester(sr, packet, receive_interface, sender_interface);
-    else if (ntohs(arp_hdr->ar_op) == arp_op_reply){    /* Reply to me, cache it */
+    } else if (ntohs(arp_hdr->ar_op) == arp_op_reply){    /* Reply to me, cache it */
       printf("***** -> This is a REPLY to me, CACHE it L:422 \n");
       sr_handle_arp_cache_reply(sr, packet, receive_interface);
-}
+    } 
 }/* end sr_handle_arp_packet */
 
 
@@ -432,7 +433,7 @@ void sr_handle_arp_cache_reply(struct sr_instance *sr,
     printf("==== sr_handle_arp_cache_reply() ==== \n");
     sr_arp_hdr_t *arp_hdr = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
 
-    print_hdr_arp(arp_hdr);
+    print_hdr_arp(packet);
 
     /* Cache it */
     struct sr_arpreq *requests = sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip); 
@@ -494,11 +495,9 @@ void sr_handle_arp_send_reply_to_requester(struct sr_instance *sr,
 
 
   printf("***** -> Checking requster packet meta info \n");
-  print_hdr_arp(arp_hdr);
-  print_hdr_eth(eth_hdr);
+  print_hdr_arp(packet);
   printf("****** -> Checking reply packet meta info \n");
-  print_hdr_arp(new_arp_hdr);
-  print_hdr_eth(new_ether_hdr);
+  print_hdr_arp(reply);
 
   /*ARP replies are sent directly to the requester’s MAC address.*/
   sr_send_packet(sr, reply, sizeof(sr_ethernet_hdr_t)+sizeof(sr_arp_hdr_t), sender_interface->name);
