@@ -77,10 +77,10 @@ void sr_print_if_list(struct sr_instance* );
 
 /* all my headers */
 
-void sr_ip_handle(struct sr_instance *sr, 
-                  uint8_t *packet,  
-                  struct sr_if *interface,
-                  unsigned int len);
+void sr_handle_ip_packet(struct sr_instance *sr, 
+                         uint8_t *packet,
+			 unsigned int len,
+                         struct sr_if *interface);
 struct sr_if *sr_get_interface_byIP(struct sr_instance *sr,
                                   uint32_t ip);
 struct sr_rt *sr_lpm(struct sr_instance *sr, uint32_t ip);
