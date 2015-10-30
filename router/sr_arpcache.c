@@ -18,7 +18,8 @@
 */
 void sr_arpcache_sweepreqs(struct sr_instance *sr)
 {
-    struct sr_arpreq *curRequest  = sr->cache.requests;
+    struct sr_arpreq *curRequest  = NULL;
+    curRequest = sr->cache.requests;
     struct sr_arpreq *nextRequest = NULL;
 
     while (curRequest)
@@ -43,6 +44,7 @@ void sr_arpcache_sweepreqs(struct sr_instance *sr)
 */
 void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
 {
+    printf("\n==== sr_handle_arp_request ====\n");
     time_t now = time(NULL);
 
     if(difftime(now, request->sent) > 1.0)
@@ -52,17 +54,17 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
           struct sr_packet *pckt     = NULL;
           struct sr_if *interface    = NULL;
           sr_ethernet_hdr_t *eth_hdr = NULL;
-          pckt = request->packets;
 
           while(pckt)
           {
             eth_hdr = (sr_ethernet_hdr_t *)(pckt->buf);
             interface = sr_get_interface_byAddr(sr, eth_hdr->ether_dhost);
-          }
-
-          if(!interface)
-            sr_send_icmp(sr, pckt->buf, pckt->len, 3, 1);
-
+            
+            if(!interface)
+              sr_send_icmp(sr, pckt->buf, pckt->len, 3, 1);
+            
+	    pckt = request->packets;
+	  }
           sr_arpreq_destroy(&(sr->cache), request);
         
         } else {   
@@ -78,7 +80,7 @@ void sr_send_arp_request(struct sr_instance *sr,
                          struct sr_if *interface, 
                          uint32_t tip)
 {
-    
+   printf("==== sr_send_arp_request ====\n");   
     
     unsigned int len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     uint8_t *buf = (uint8_t *)malloc(len);
